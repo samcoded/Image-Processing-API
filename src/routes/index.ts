@@ -4,15 +4,15 @@ import { resizeImage, getImageData } from '../utilities/image';
 
 const router = express.Router();
 
-router.get('/images', async (req: Request, res: Response) => {
+router.get('/image', async (req: Request, res: Response) => {
   const filename: string = req.query.filename as string;
-  let width: number = parseInt(req.query.width as string);
-  let height: number = parseInt(req.query.height as string);
+  const width: number = parseInt(req.query.width as string);
+  const height: number = parseInt(req.query.height as string);
 
-  if (!filename && !width && !height)
+  if (!filename || !width || !height)
     return res.status(400).send('Bad request');
 
-  const file = await getImageData(filename);
+  const file = await getImageData('images', filename);
   if (!file) return res.status(404).send('File not found');
 
   try {
@@ -22,10 +22,11 @@ router.get('/images', async (req: Request, res: Response) => {
       '../../',
       `assets/thumbs/${thumb}`
     );
-    res.set({ 'Content-Type': 'image/jpg' });
-    res.sendFile(absolutePath);
+    // res.set({ 'Content-Type': `image/${file.format}` });
+    res.status(200).sendFile(absolutePath);
   } catch (err) {
-    console.log(err);
+    // console.log((err as Error).message);
+    res.status(500).send('Internal server error');
   }
 });
 
